@@ -1,0 +1,176 @@
+%% Dr Alun Moon
+%% assignment-template.tex, generated from assignment-template.dtx
+\documentclass[12pt]{article}
+\usepackage[british]{babel}
+
+\usepackage{url}
+\usepackage[round]{natbib}
+\usepackage{infoboxes}
+
+\usepackage{latexsym}
+\usepackage{tlatex}
+\usepackage{color}
+\definecolor{boxshade}{gray}{.8}
+\setboolean{shading}{true}
+
+\usepackage{enumerate,
+            siunitx}
+
+\begin{document}
+
+\section{Device communications register}
+\subsection{The Specification} 
+\begin{tla}
+------------------------------- MODULE Device -------------------------------
+CONSTANT Data
+VARIABLE register
+
+TypeInv == 
+    register \in [ busy:{0,1}, data:Data ]
+
+Init == 
+    register = [busy|->0, data|-> CHOOSE x \in Data :TRUE ]
+
+Send(d) ==
+    /\ register.busy = 0
+    /\ register' = [busy|->1, data|->d]
+
+Read == 
+    /\ register.busy = 1
+    /\ register' = [register EXCEPT !.busy=0 ]
+
+Next == 
+    \/ \E d \in Data : Send(d)
+    \/ Read 
+
+Device == Init /\ [][Next]_register /\ WF_register(Next)
+=============================================================================
+\end{tla}
+\begin{tlatex}
+\@x{}\moduleLeftDash\@xx{ {\MODULE} Device}\moduleRightDash\@xx{}%
+\@x{ {\CONSTANT} Data}%
+\@x{ {\VARIABLE} register}%
+\@pvspace{8.0pt}%
+\@x{ TypeInv \.{\defeq}}%
+ \@x{\@s{16.4} register \.{\in} [ busy \.{:} \{ 0 ,\, 1 \} ,\, data \.{:} Data
+ ]}%
+\@pvspace{8.0pt}%
+\@x{ Init \.{\defeq}}%
+ \@x{\@s{16.4} register \.{=} [ busy \.{\mapsto} 0 ,\, data \.{\mapsto}
+ {\CHOOSE} x \.{\in} Data \.{:} {\TRUE} ]}%
+\@pvspace{8.0pt}%
+\@x{ Send ( d ) \.{\defeq}}%
+\@x{\@s{25.84} \.{\land} register . busy \.{=} 0}%
+ \@x{\@s{25.84} \.{\land} register \.{'} \.{=} [ busy \.{\mapsto} 1 ,\, data
+ \.{\mapsto} d ]}%
+\@pvspace{8.0pt}%
+\@x{ Read \.{\defeq}}%
+\@x{\@s{16.4} \.{\land} register . busy \.{=} 1}%
+ \@x{\@s{16.4} \.{\land} register \.{'} \.{=} [ register {\EXCEPT} {\bang} .
+ busy \.{=} 0 ]}%
+\@pvspace{8.0pt}%
+\@x{ Next \.{\defeq}}%
+\@x{\@s{16.4} \.{\lor} \E\, d \.{\in} Data \.{:} Send ( d )}%
+\@x{\@s{16.4} \.{\lor} Read}%
+\@pvspace{8.0pt}%
+ \@x{ Device \.{\defeq} Init \.{\land} {\Box} [ Next ]_{ register} \.{\land}
+ {\WF}_{ register} ( Next )}%
+\@x{}\bottombar\@xx{}%
+\end{tlatex}
+
+\section{The Model}
+
+\subsection{Model Overview}
+\paragraph{The Behaviour specification} is a \emph{Temporal formula} of
+\begin{tla}
+	Desvice
+\end{tla}
+\begin{tlatex}
+\@x{\@s{32.8} Device}%
+\end{tlatex}
+
+\paragraph{The Model} values assigned to declared constants
+\begin{tla}
+	Data <- {0,1,2,3,4,5}
+\end{tla}
+\begin{tlatex}
+\@x{\@s{32.8} Data \.{\leftarrow} \{ 0 ,\, 1 ,\, 2 ,\, 3 ,\, 4 ,\, 5 \}}%
+\end{tlatex}
+
+\subsection{Checks and verifications}
+\paragraph{Invariants} The type-invariant is checked.
+\begin{tla}
+	TypeInv
+\end{tla}
+\begin{tlatex}
+\@x{\@s{32.8} TypeInv}%
+\end{tlatex}
+
+\paragraph{Properties} the temporal property is checked: that the data is read
+whenever it is available.
+\begin{tla}
+	[]<><<Read>>_register
+\end{tla}
+\begin{tlatex}
+\@x{\@s{32.8} {\Box} {\Diamond} {\langle} Read {\rangle}_{ register}}%
+\end{tlatex}
+
+\subsection{Results} A summary of the results
+\paragraph{Statistics} a summaries of the actions and number of states
+found.
+
+\begin{table}[h]
+\begin{tabular}{lr}
+	States found & \num{43} \\
+ Distinct states & \num{12} \\ 
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\begin{tabular}{llrr}
+	\textbf{Action} & Location & States Found & \textbf{Distinct states} \\
+	\hline
+	\textit{Init}   & Line 8 & 1 & 1 \\
+	\textit{Send}   & Line 11 & 36 & 6 \\
+	\textit{Read}   & Line 15 & 6 & 5 \\
+\end{tabular}
+\end{table}
+
+\subsection{Discussion}
+\subsubsection{Model description} 
+\paragraph{The state of the system is } Modelled as a record with fields
+\texttt{busy} and \texttt{data}. 
+
+\subparagraph{The type invariant} is that the busy flag can have a value of 0
+and 1, and that the data can have a value from the constant Data.
+
+\subparagraph{The initial conditions} 
+set the busy flag to 0, and an arbitrary value from the Data is chosen.
+
+\paragraph{The Next relation} is that there is some data value that can be
+sent, or that the data is read
+
+\paragraph{The system specification} is a conjunction of the initial
+conditions, the next action with stuttering, and a weak fairness condition on
+the next action.
+
+\subsubsection{Interpretation of results}
+The specification verifies under the model, satisfying the type invariant and
+the temporal property;
+\begin{tla}
+	[]<><<Read>>_register
+\end{tla}
+\begin{tlatex}
+\@x{\@s{32.8} {\Box} {\Diamond} {\langle} Read {\rangle}_{ register}}%
+\end{tlatex}
+This checks that data is continually read from the register: communication
+happens.  We don't need to check a property on the Send action, as data may or
+may not be sent.  But if it is sent, then we know t is read.
+
+
+
+\end{document}
+
+\endinput
+%%
+%% End of file `assignment-template.tex'.
